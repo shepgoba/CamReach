@@ -13,68 +13,18 @@ CAMLivePhotoBadge *livePhotoBadge = nil;
 		%orig;
 		topBar = self;
 		[self removeFromSuperview];
-		//NSLog(@"%@",NSStringFromCGRect(frame));
-		//tempview = MSHookIvar<UIView *>(self, "__backgroundView");
-		//CGRect topbarframe = MSHookIvar<CGRect>(self, "frame");
-		//topbarframe.origin.y += 100;
-		//NSString *x = NSStringFromCGRect(tempview.frame);
-		/*UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"ROFL" 
-                                                    message:x 
-                                                    delegate:self 
-                                                    cancelButtonTitle:@"OK" 
-                                                    otherButtonTitles:nil];
-		[alert show];*/
-		//CGRect tempframe = tempview.frame;
-		//tempframe.origin.y += 100;
-		//tempview.frame = tempframe;
-		//tempview.origin.y += 100;
-		//MSHookIvar<UIView *>(self, "__backgroundView") = tempview;
-		//CGRect topbarframe = self.frame;
-		//topbarframe.origin.y = 0;
-		/*UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"ROFL" 
-                                                    message:NSStringFromCGRect(frame)
-                                                    delegate:self 
-                                                    cancelButtonTitle:@"OK" 
-                                                    otherButtonTitles:nil];*/
-		//[alert show];
-		//CGRect camframe = self.frame;
-		//camframe.origin.y = 345;
-		//self.frame = camframe;
-		//self.hidden = YES;
 	}
 %end
 @interface CAMModeDial : UIView
-//@property (nonatomic, assign) CGRect frame;
 @property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
 @end
 %hook CAMModeDial
-		/*t.frame = CGRect();
-		CGRect y = t.frame;
-		y.origin.y += 100;
-		t.frame = y;
-		MSHookIvar<UIView *>(self, "__itemsContainerView") = t;*/
-		//NSLog(t)
-		- (void) layoutIfNeeded {}
-	-(void) layoutSubviews 
+	- (void) layoutIfNeeded {}
+	- (void) layoutSubviews 
 	{
 		%orig;
 		bottomDial = self;
 		[self removeFromSuperview];
-		//UIView *t = MSHookIvar<UIView *>(self, "__itemsContainerView");
-		/*CGRect dialFrame = t.frame;
-		dialFrame.origin.y = -200;
-		t.frame = dialFrame;*/
-		//[t removeFromSuperview];
-		//bottomDial = MSHookIvar<UIView *>(self, "__itemsContainerView");
-		//[MSHookIvar<UIView *>(self, "__itemsContainerView") removeFromSuperview];
-		//camframe2.origin.y = 0;
-		//self.frame = camframe2;
-		/*UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"ROFL" 
-                                                    message:NSStringFromCGRect(camframe2)
-                                                    delegate:self 
-                                                    cancelButtonTitle:@"OK" 
-                                                    otherButtonTitles:nil];
-		[alert show];*/
 	}
 %end
 @interface CAMViewfinderView : UIView
@@ -92,7 +42,7 @@ CAMLivePhotoBadge *livePhotoBadge = nil;
 %end
 
 @interface CAMLivePhotoBadge : UIView
-//@property (nonatomic, assign) CGRect frame;
+@property (nonatomic, assign) CGRect frame;
 @property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
 @end
 %hook CAMLivePhotoBadge
@@ -105,23 +55,21 @@ CAMLivePhotoBadge *livePhotoBadge = nil;
 	}
 %end
 %hook CAMBottomBar
-- (void) layoutIfNeeded {}
--(void) layoutSubviews
-{
-	%orig;
-	//CGRect yeet = CGRectMake(20, 20, 20, 20);
-	CGRect newFrame = topBar.frame;
-	newFrame.size.height = 38;
-	topBar.frame = newFrame;
-	CGRect tmpFrame = livePhotoBadge.frame;
-	livePhotoBadge.frame = tmpFrame;
-	//[self addSubview: yeet];
-	[self addSubview: topBar];
-	[self addSubview: livePhotoBadge];
-}
+	- (void) layoutIfNeeded {}
+	- (void) layoutSubviews
+	{
+		%orig;
+		CGRect newFrame = topBar.frame;
+		newFrame.size.height = 38;
+		topBar.frame = newFrame;
+		CGRect tmpFrame = livePhotoBadge.frame;
+		livePhotoBadge.frame = tmpFrame;
+		[self addSubview: topBar];
+		[self addSubview: livePhotoBadge];
+	}
 %end
 @interface CAMFilterScrubberView : UIView
-//@property (nonatomic, assign) CGRect frame;
+@property (nonatomic, assign) CGRect frame;
 @property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
 @end
 %hook CAMFilterScrubberView
@@ -134,22 +82,8 @@ CAMLivePhotoBadge *livePhotoBadge = nil;
 		self.frame = tmpFrame;
 	}
 %end
-/*@interface CAMUtilityBar : UIView
-@property (nonatomic, assign) CGRect frame;
-@property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
-@end
-%hook CAMUtilityBar
-	- (void) layoutIfNeeded {}
-	- (void) layoutSubviews
-	{
-		%orig;
-		CGRect tmpFrame = self.frame;
-		tmpFrame.origin.y -= 90;
-		self.frame = tmpFrame;
-	}
-%end*/
+
 @interface CAMExpandableMenuButton : UIControl
-//@property (nonatomic, assign) CGRect frame;
 @property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
 @end
 %hook CAMExpandableMenuButton
