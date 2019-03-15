@@ -89,6 +89,7 @@ CAMLivePhotoBadge *livePhotoBadge = nil;
 	-(void) layoutIfNeeded {}
 	-(void) layoutSubviews
 	{
+		//TODO: Fix landscape positioning bug for toggles.
 		%orig;
 	}
 %end
