@@ -1,5 +1,4 @@
-
-//C
+//Copyright (C) shepgoba 2019
 CAMModeDial *bottomDial = nil;
 CAMTopBar *topBar = nil;
 CAMLivePhotoBadge *livePhotoBadge = nil;
