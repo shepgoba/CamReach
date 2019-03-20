@@ -1,31 +1,52 @@
 //Copyright (C) shepgoba 2019
-CAMModeDial *bottomDial = nil;
-CAMTopBar *topBar = nil;
-CAMLivePhotoBadge *livePhotoBadge = nil;
+@interface CAMModeDial : UIView
+@property (nonatomic, assign) CGRect frame;
+@end
 @interface CAMTopBar : UIView
 @property (nonatomic, assign) CGRect frame;
 @end
+@interface CAMFilterScrubberView : UIView
+@property (nonatomic, assign) CGRect frame;
+@end
+CAMModeDial *bottomDial = nil;
+CAMTopBar *topBar = nil;
+CAMFilterScrubberView *scrubber = nil;
+BOOL scrubberAppear = NO;
+static CGRect topBarFrame;
+static BOOL runone = NO;
+
 %hook CAMTopBar
 	- (void) layoutIfNeeded {}
 	- (void) layoutSubviews 
 	{
 		%orig;
 		topBar = self;
+		self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, self.frame.size.width, self.frame.size.height - 2);
+		if (!runone)
+		{
+			topBarFrame = self.frame;
+			runone = YES;
+		}
 		[self removeFromSuperview];
 	}
 %end
-@interface CAMModeDial : UIView
-@property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
-@end
 %hook CAMModeDial
 	- (void) layoutIfNeeded {}
 	- (void) layoutSubviews 
 	{
 		%orig;
 		bottomDial = self;
-		[self removeFromSuperview];
+		bottomDial.frame = topBarFrame; /* Set the frame of bottomDial equal to original TopBar frame */
+		[self removeFromSuperview]; 
+
 	}
 %end
+void setTopBarFrame()
+{
+	CGRect tmpFrame = topBar.frame;
+	tmpFrame.origin.y = 0;
+	topBar.frame = tmpFrame;
+}
 @interface CAMViewfinderView : UIView
 @property (nonatomic, assign, readwrite, getter=isHidden) BOOL opaque;
 @property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
@@ -36,52 +57,50 @@ CAMLivePhotoBadge *livePhotoBadge = nil;
 	- (void) layoutSubviews
 	{
 		%orig;
+		bottomDial.frame = topBarFrame;
+		setTopBarFrame();
 		[self addSubview: bottomDial];
 	}
 %end
 
-@interface CAMLivePhotoBadge : UIView
-@property (nonatomic, assign) CGRect frame;
-@property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
-@end
-%hook CAMLivePhotoBadge
-	- (void) layoutIfNeeded {}
-	- (void) viewDidLoad
-	{
-		%orig;
-		livePhotoBadge = self;
-		[self removeFromSuperview];
-	}
-%end
-%hook CAMBottomBar
-	- (void) layoutIfNeeded {}
-	- (void) layoutSubviews
-	{
-		%orig;
-		CGRect newFrame = topBar.frame;
-		newFrame.size.height = 38;
-		topBar.frame = newFrame;
-		CGRect tmpFrame = livePhotoBadge.frame;
-		livePhotoBadge.frame = tmpFrame;
-		[self addSubview: topBar];
-		[self addSubview: livePhotoBadge];
-	}
-%end
-@interface CAMFilterScrubberView : UIView
-@property (nonatomic, assign) CGRect frame;
-@property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
-@end
 %hook CAMFilterScrubberView
 	- (void) layoutIfNeeded {}
 	- (void) layoutSubviews
 	{
+		scrubber = self;
+		[self removeFromSuperview];
+		
 		%orig;
-		CGRect tmpFrame = self.frame;
-		tmpFrame.origin.y -= 85;
-		self.frame = tmpFrame;
+	}
+%end
+@interface CAMUtilityBar : UIView
+@property (nonatomic, assign) CGRect frame;
+@property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
+@end
+%hook CAMUtilityBar
+	- (void) layoutIfNeeded {}
+	- (void) layoutSubviews
+	{
+		%orig;
+
+		CGRect tmpFrame = scrubber.frame;
+		tmpFrame.origin.y -= topBarFrame.size.height;
+		scrubber.frame = tmpFrame;
+
+		[self addSubview: scrubber];
 	}
 %end
 
+%hook CAMBottomBar
+	- (void) layoutIfNeeded {}
+	- (void) layoutSubviews
+	{
+		%orig();
+		setTopBarFrame();
+		[self addSubview: topBar];
+	}
+%end
+/*
 @interface CAMExpandableMenuButton : UIControl
 @property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
 @end
@@ -89,7 +108,7 @@ CAMLivePhotoBadge *livePhotoBadge = nil;
 	-(void) layoutIfNeeded {}
 	-(void) layoutSubviews
 	{
-		//TODO: Fix landscape positioning bug for toggles.
 		%orig;
 	}
 %end
+*/
