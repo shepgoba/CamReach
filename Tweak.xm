@@ -21,7 +21,7 @@ static BOOL runone = NO;
 	{
 		%orig;
 		topBar = self;
-		self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, self.frame.size.width, self.frame.size.height - 2);
+		//self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, self.frame.size.width, self.frame.size.height - 2);
 		if (!runone)
 		{
 			topBarFrame = self.frame;
