@@ -1,68 +1,120 @@
-//Copyright (C) shepgoba 2019
-@interface CAMModeDial : UIView
-@property (nonatomic, assign) CGRect frame;
-@end
+#import "CAMFrame.h"
 @interface CAMTopBar : UIView
-@property (nonatomic, assign) CGRect frame;
 @end
 @interface CAMFilterScrubberView : UIView
-@property (nonatomic, assign) CGRect frame;
 @end
-CAMModeDial *bottomDial = nil;
-CAMTopBar *topBar = nil;
-CAMFilterScrubberView *scrubber = nil;
+@interface CAMModeDial : UIView
+@end
+static CAMModeDial *bottomDial;
+static CAMTopBar *ttopBar;
+//static CAMBottomBar *bottomBar = nil;
+//static CAMFilterScrubberView *scrubber = nil;
 BOOL scrubberAppear = NO;
 static CGRect topBarFrame;
-static BOOL runone = NO;
+static CGRect bottomDialFrame;
+//static BOOL runone = NO;
 
-%hook CAMTopBar
+@interface CAMBottomBar : UIView
+@property (nonatomic,retain) CAMModeDial * modeDial;
+@end
+
+@implementation CAMBottomBar
+@synthesize modeDial=_modeDial;
+@end
+
+
+@interface CAMViewfinderView : UIView
+@property (nonatomic,retain) CAMTopBar * topBar; 
+@property (nonatomic, retain) CAMBottomBar * bottomBar;
+@end
+
+@implementation CAMViewfinderView
+@synthesize topBar=_topBar;
+@synthesize bottomBar=_bottomBar;
+@end
+
+
+static BOOL hasRun = NO;
+BOOL viewHasLoaded = NO;
+CGRect CGRectCopy(CGPoint x, CGSize y)
+{
+	return CGRectMake(x.x, x.y, y.width, y.height);
+}
+%hook CAMViewfinderView
 	- (void) layoutIfNeeded {}
-	- (void) layoutSubviews 
+	- (void) layoutSubviews
 	{
 		%orig;
-		topBar = self;
-		//self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, self.frame.size.width, self.frame.size.height - 2);
-		if (!runone)
+		if (!hasRun)
 		{
-			topBarFrame = self.frame;
-			runone = YES;
+			bottomDialFrame = self.bottomBar.modeDial.frame; //this isn't even a copy. TODO: Deep copy values
+			topBarFrame = self.topBar.frame; //this isn't even a copy. TODO: Deep copy values
+			viewHasLoaded = YES;
+			hasRun = YES;
 		}
-		[self removeFromSuperview];
+		[self addSubview: bottomDial];
+	}
+%end
+
+%hook CAMBottomBar
+	//- (void) layoutIfNeeded {}
+	- (void) layoutSubviews
+	{
+		%orig;
+		[self addSubview: ttopBar];
 	}
 %end
 %hook CAMModeDial
 	- (void) layoutIfNeeded {}
 	- (void) layoutSubviews 
 	{
+		static BOOL hasRun = NO;
 		%orig;
-		bottomDial = self;
-		bottomDial.frame = topBarFrame; /* Set the frame of bottomDial equal to original TopBar frame */
-		[self removeFromSuperview]; 
-
+		if (viewHasLoaded)
+		{
+			bottomDial = self;
+			self.frame = topBarFrame;
+			if (!hasRun)
+			{
+				hasRun = YES;
+			}
+			[self removeFromSuperview];
+		}
 	}
 %end
-void setTopBarFrame()
-{
-	CGRect tmpFrame = topBar.frame;
-	tmpFrame.origin.y = 0;
-	topBar.frame = tmpFrame;
-}
-@interface CAMViewfinderView : UIView
-@property (nonatomic, assign, readwrite, getter=isHidden) BOOL opaque;
-@property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
-@end
-%hook CAMViewfinderView
-	UIColor *clear = [UIColor colorWithRed: 0.0f green: 0.0f blue: 0.0f alpha:0.0f];
-	- (void) layoutIfNeeded {}
-	- (void) layoutSubviews
+
+%hook CAMTopBar
+	- (void) layoutSubviews 
 	{
+		static BOOL hasRun = NO;
 		%orig;
-		bottomDial.frame = topBarFrame;
-		setTopBarFrame();
-		[self addSubview: bottomDial];
+		if (viewHasLoaded)
+		{
+			ttopBar = self;
+			//self.frame = bottomDialFrame;
+			if (!hasRun)
+			{
+				hasRun = YES;
+			}
+			[self removeFromSuperview];
+			
+		}
 	}
+	
 %end
 
+//CGRect *bottomDialFramePointer = &bottomDialFrame;
+//void setTopBarFrame()
+//{
+	/*CGRect tmpFrame = topBar.frame;
+	tmpFrame.origin.y = 0;
+	topBar.frame = tmpFrame;*/
+	//if (bottomDialFramePointer != nil)
+	//{
+		//topBar.frame = *bottomDialFramePointer;
+	//}
+//}
+/*
 %hook CAMFilterScrubberView
 	- (void) layoutIfNeeded {}
 	- (void) layoutSubviews
@@ -90,16 +142,6 @@ void setTopBarFrame()
 		[self addSubview: scrubber];
 	}
 %end
-
-%hook CAMBottomBar
-	- (void) layoutIfNeeded {}
-	- (void) layoutSubviews
-	{
-		%orig();
-		setTopBarFrame();
-		[self addSubview: topBar];
-	}
-%end
 /*
 @interface CAMExpandableMenuButton : UIControl
 @property (nonatomic, assign, readwrite, getter=isHidden) BOOL hidden;
@@ -111,4 +153,5 @@ void setTopBarFrame()
 		%orig;
 	}
 %end
+
 */
